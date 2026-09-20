@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AdminGig, EventApiService } from '../../core/api/event-api.service';
+import { AdminGig, EventApiService, RegistrationData } from '../../core/api/event-api.service';
 
 @Component({ selector: 'app-admin-portal', standalone: true, imports: [CommonModule, ReactiveFormsModule, RouterLink], templateUrl: './admin-portal.component.html', styleUrl: './admin-portal.component.css' })
 export class AdminPortalComponent {
@@ -20,5 +20,34 @@ export class AdminPortalComponent {
   cancelEdit() { this.editingId = undefined; this.gigForm.reset({ title: '', description: '', venue: '', startsAt: '', capacity: 10, numberOfDays: 1, dailyPay: 1000 }); }
   remove(event: AdminGig) { if (!this.credentials || !window.confirm(`Delete “${event.title}”? This also removes its registrations.`)) return; this.api.delete(event.id, this.credentials.username, this.credentials.password).subscribe({ next: () => { this.notice = `“${event.title}” has been deleted.`; if (this.viewingRegistrations?.id === event.id) this.viewingRegistrations = undefined; this.loadEvents(); }, error: () => this.notice = 'Unable to delete this event.' }); }
   showRegistrations(event: AdminGig) { this.viewingRegistrations = event; }
+  downloadRegistrationReport(event: AdminGig) {
+    if (!event.registrations.length) { this.notice = 'There are no registrations to download for this event.'; return; }
+    const escape = (value: string | number) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const profiles = event.registrations.map(worker => `<article class="profile"><img src="${escape(worker.picture)}" alt="${escape(worker.name)}"><div><h2>${escape(worker.name)}</h2><p>${escape(worker.email)} · ${escape(worker.phoneNumber)}</p><p>${escape(worker.age)} years · ${escape(worker.gender)} · ${escape(worker.location)}</p><p>${escape(worker.height)} cm · ${escape(worker.weight)} kg · ${escape(worker.education)}</p><p class="experience">${escape(worker.experience)}</p></div></article>`).join('');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escape(event.title)} registrations</title><style>body{margin:0;padding:34px;background:#edf3ed;color:#24362e;font-family:Arial,sans-serif}.report{max-width:800px;margin:auto;background:#fffdf7;border:1px solid #d9e1d8;border-radius:14px;overflow:hidden;box-shadow:0 14px 35px #173b2d18}.header{padding:25px 30px;background:#173b31;color:#fff}.header small{color:#eac36d;font-weight:700;letter-spacing:1px}.header h1{margin:6px 0;font:600 28px Georgia,serif}.header p{margin:0;color:#d5e2d8;font-size:14px}.count{display:inline-block;margin-top:12px;padding:6px 9px;border-radius:20px;background:#315c4c;color:#fff;font-size:12px;font-weight:700}.profiles{padding:8px 30px 22px}.profile{display:flex;gap:18px;padding:21px 0;border-bottom:1px solid #e1e7df}.profile:last-child{border:0}.profile img{width:94px;height:94px;flex:0 0 94px;object-fit:cover;border-radius:8px;background:#e6eee5}.profile h2{margin:0 0 7px;font:600 22px Georgia,serif}.profile p{margin:4px 0;color:#617168;font-size:13px;line-height:1.4}.profile .experience{margin-top:9px;font-style:italic}@media print{body{padding:0;background:#fff}.report{box-shadow:none;border:0}.profile{break-inside:avoid}}</style></head><body><main class="report"><header class="header"><small>EVENT REGISTRATIONS</small><h1>${escape(event.title)}</h1><p>${escape(this.eventDate(event))} · ${escape(event.venue)}</p><span class="count">${event.registrations.length} registered</span></header><section class="profiles">${profiles}</section></main></body></html>`;
+    this.downloadHtml(html, `${this.fileName(event)}-registrations-report.html`);
+  }
+  downloadProfileCard(event: AdminGig, worker: RegistrationData) {
+    const escape = (value: string | number) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const image = worker.picture ? `<img src="${escape(worker.picture)}" alt="${escape(worker.name)}">` : '<div class="avatar-placeholder">No photo</div>';
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escape(worker.name)} - EventHub profile</title><style>body{margin:0;padding:32px;background:#edf3ed;color:#24362e;font-family:Arial,sans-serif}.card{max-width:720px;margin:auto;background:#fffdf7;border:1px solid #d9e1d8;border-radius:14px;overflow:hidden;box-shadow:0 14px 35px #173b2d18}.event{padding:18px 28px;background:#173b31;color:#fff}.event small{color:#eac36d;font-weight:700;letter-spacing:1px}.event h1{margin:6px 0 0;font:600 26px Georgia,serif}.profile{display:flex;gap:22px;padding:28px}.profile img,.avatar-placeholder{width:112px;height:112px;flex:0 0 112px;object-fit:cover;border-radius:10px;background:#e6eee5}.avatar-placeholder{display:grid;place-items:center;color:#64746a;font-size:12px}.profile h2{margin:0 0 8px;font:600 29px Georgia,serif}.profile p{margin:4px 0;color:#617168;font-size:14px}.details{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid #e1e7df}.detail{padding:15px 28px;border-bottom:1px solid #e1e7df}.detail:nth-child(odd){border-right:1px solid #e1e7df}.detail small{display:block;margin-bottom:4px;color:#78887d;font-size:10px;font-weight:700;letter-spacing:1px}.detail strong{font-size:14px}.experience{padding:18px 28px;color:#52655a;line-height:1.5;font-size:14px}.experience small{display:block;margin-bottom:6px;color:#78887d;font-size:10px;font-weight:700;letter-spacing:1px}@media print{body{padding:0;background:#fff}.card{box-shadow:none;border:0}}</style></head><body><main class="card"><header class="event"><small>EVENT REGISTRATION PROFILE</small><h1>${escape(event.title)}</h1><p>${escape(this.eventDate(event))} · ${escape(event.venue)}</p></header><section class="profile">${image}<div><h2>${escape(worker.name)}</h2><p>${escape(worker.email)}</p><p>${escape(worker.phoneNumber)}</p><p>${escape(worker.location)}</p></div></section><section class="details"><div class="detail"><small>AGE / GENDER</small><strong>${escape(worker.age)} years · ${escape(worker.gender)}</strong></div><div class="detail"><small>EDUCATION</small><strong>${escape(worker.education)}</strong></div><div class="detail"><small>HEIGHT</small><strong>${escape(worker.height)} cm</strong></div><div class="detail"><small>WEIGHT</small><strong>${escape(worker.weight)} kg</strong></div></section><section class="experience"><small>EXPERIENCE</small>${escape(worker.experience)}</section></main></body></html>`;
+    this.downloadHtml(html, `${this.fileName(event)}-${this.safeName(worker.name)}-profile.html`);
+  }
+  private eventDate(event: AdminGig) { return new Date(event.startsAt).toLocaleDateString('en-CA'); }
+  private fileName(event: AdminGig) { return `${this.safeName(event.title)}-${this.eventDate(event)}`; }
+  private safeName(value: string) { return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'event'; }
+  private downloadHtml(html: string, fileName: string) {
+    html = html.replace('</style>', '.profile img{width:auto!important;height:auto!important;max-width:240px!important;max-height:320px!important;flex:0 1 auto!important;object-fit:contain!important}.avatar-placeholder{width:112px!important;height:112px!important;flex:0 0 112px!important}</style>');
+    const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+    const link = document.createElement('a'); link.href = url; link.download = fileName; link.click(); URL.revokeObjectURL(url);
+  }
+  private downloadCsv(rows: Record<string, string | number>[], fileName: string) {
+    if (!rows.length) { this.notice = 'There are no registrations to download for this event.'; return; }
+    const headers = Object.keys(rows[0]);
+    const escape = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const csv = [headers.map(escape).join(','), ...rows.map(row => headers.map(header => escape(row[header])).join(','))].join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a'); link.href = url; link.download = fileName; link.click(); URL.revokeObjectURL(url);
+  }
   signOut() { this.signedIn = false; this.credentials = undefined; this.events = []; this.editingId = undefined; this.viewingRegistrations = undefined; this.loginForm.reset({ username: '', password: '' }); this.cancelEdit(); }
 }

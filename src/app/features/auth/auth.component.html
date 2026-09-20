@@ -1,0 +1,75 @@
+<main class="auth-page"><a routerLink="/" class="brand">✦ EventHub</a>
+    <section class="auth-card">
+        <p class="eyebrow">YOUR EVENTHUB ACCOUNT</p>
+        <h1>{{ mode === 'signin' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : mode === 'otp' ? 'Verify
+            your email' : mode === 'forgot' ? 'Reset your password' : 'Choose a new password' }}</h1>
+        <p class="intro" *ngIf="mode === 'signin'">Sign in to manage your profile and apply to verified event work.</p>
+        <p class="intro" *ngIf="mode === 'signup'">A verified account helps organizers find reliable event workers.</p>
+        <p class="notice" *ngIf="notice">{{ notice }}</p>
+        <form *ngIf="mode === 'signin'" [formGroup]="signInForm" (ngSubmit)="submitSignIn()"><label>Email address<input
+                    type="email" formControlName="email" autocomplete="email"
+                    placeholder="you@example.com"></label><label>Password<input type="password"
+                    formControlName="password" autocomplete="current-password"
+                    placeholder="Your password"></label><button [disabled]="busy">{{ busy ? 'Signing in…' : 'Sign in to
+                EventHub' }}</button>
+            <p><button type="button" class="link"
+                    (click)="mode = 'forgot'; notice = ''; forgotForm.controls.email.setValue(signInForm.controls.email.value)">Forgot
+                    password?</button></p>
+            <p>New to EventHub? <button type="button" class="link" (click)="mode = 'signup'; notice = ''">Create an
+                    account</button></p>
+        </form>
+        <form *ngIf="mode === 'signup'" [formGroup]="signUpForm" (ngSubmit)="submitSignUp()"><label>Email address<input
+                    type="email" formControlName="email" autocomplete="email"
+                    placeholder="you@example.com"></label><label>Password<input type="password"
+                    formControlName="password" autocomplete="new-password" placeholder="At least 8 characters"><small
+                    *ngIf="signUpForm.controls.password.touched && signUpForm.controls.password.hasError('minlength')">Password
+                    must be at least 8 characters.</small></label><label>Confirm password<input type="password"
+                    formControlName="confirmPassword" autocomplete="new-password"
+                    placeholder="Re-enter your password"><small
+                    *ngIf="signUpForm.touched && signUpForm.hasError('passwordMismatch')">Passwords do not
+                    match.</small></label><label class="terms"><input type="checkbox"
+                    formControlName="termsAccepted"><span>I agree to the <button type="button" class="link"
+                        (click)="showTerms = true">Terms &amp; Conditions</button>.</span></label><small
+                *ngIf="signUpForm.controls.termsAccepted.touched && signUpForm.controls.termsAccepted.invalid">You must
+                accept the terms to create an account.</small><button [disabled]="busy">{{ busy ? 'Creating your
+                account…' : 'Create account' }}</button>
+            <p>Already have an account? <button type="button" class="link" (click)="mode = 'signin'; notice = ''">Sign
+                    in</button></p>
+        </form>
+        <form *ngIf="mode === 'otp'" [formGroup]="otpForm" (ngSubmit)="verify()">
+            <p class="intro">A six-digit verification code was sent to <strong>{{ pendingEmail }}</strong>. It expires
+                in 10 minutes.</p><label>Verification code<input formControlName="otp" inputmode="numeric"
+                    autocomplete="one-time-code" maxlength="6" placeholder="000000"></label><button [disabled]="busy">{{
+                busy ? 'Verifying…' : 'Verify email and continue' }}</button>
+        </form>
+        <form *ngIf="mode === 'forgot'" [formGroup]="forgotForm" (ngSubmit)="forgotPassword()">
+            <p class="intro">Enter your EventHub email and we’ll send a six-digit password reset code.</p><label>Email
+                address<input type="email" formControlName="email" autocomplete="email"
+                    placeholder="you@example.com"></label><button [disabled]="busy">{{ busy ? 'Sending code…' : 'Send
+                reset code' }}</button>
+            <p><button type="button" class="link" (click)="mode = 'signin'; notice = ''">Back to sign in</button></p>
+        </form>
+        <form *ngIf="mode === 'reset'" [formGroup]="resetForm" (ngSubmit)="resetPassword()">
+            <p class="intro">Enter the code sent to <strong>{{ pendingEmail }}</strong> and choose a new password.</p>
+            <label>Reset code<input formControlName="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                    placeholder="000000"></label><label>New password<input type="password" formControlName="password"
+                    autocomplete="new-password" placeholder="At least 8 characters"></label><label>Confirm new
+                password<input type="password" formControlName="confirmPassword" autocomplete="new-password"
+                    placeholder="Re-enter your password"><small
+                    *ngIf="resetForm.touched && resetForm.hasError('passwordMismatch')">Passwords do not
+                    match.</small></label><button [disabled]="busy">{{ busy ? 'Updating password…' : 'Reset password'
+                }}</button>
+        </form>
+    </section>
+</main>
+<div class="terms-backdrop" *ngIf="showTerms">
+    <section class="terms-modal" role="dialog" aria-modal="true" aria-label="Terms and conditions"><button
+            class="terms-close" type="button" (click)="showTerms = false">×</button>
+        <p class="eyebrow">EVENTHUB TERMS</p>
+        <h2>Terms &amp; Conditions</h2>
+        <p>EventHub does not handle payments. Payment arrangements are solely between you and the organizer.</p>
+        <p>Verify the organizer and event details yourself before accepting work.</p>
+        <p>Your application profile details may be shared with the organizer for event selection and verification.</p>
+        <button type="button" class="terms-done" (click)="showTerms = false">I understand</button>
+    </section>
+</div>

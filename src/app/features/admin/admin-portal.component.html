@@ -1,13 +1,245 @@
-<header class="admin-header"><a routerLink="/" class="brand"><span>✦</span> EventHub</a><a routerLink="/" class="back-link">← Worker board</a></header>
-<main class="portal"><aside><p class="eyebrow">ADMINISTRATION</p><h1>Build the teams<br><i>behind great events.</i></h1><p>Post, manage, and staff event work from one place. Workers see the duration and daily pay before they apply.</p><div class="admin-benefits"><div><strong>01</strong><span>Set the event duration</span></div><div><strong>02</strong><span>Review worker profiles</span></div><div><strong>03</strong><span>Keep every event up to date</span></div></div><div class="rule"></div><p class="small">This is a protected portal. Your account is required to manage events.</p></aside>
-  <section class="portal-card"><p class="notice" *ngIf="notice">{{ notice }} <button (click)="notice = ''">×</button></p>
-    <form *ngIf="!signedIn" [formGroup]="loginForm" (ngSubmit)="signIn()"><p class="eyebrow">SECURE SIGN IN</p><h2>Administrator access</h2><p class="form-intro">Sign in to create and manage event opportunities.</p><label>Username<input formControlName="username" autocomplete="username"></label><label>Password<input type="password" formControlName="password" autocomplete="current-password"></label><button type="submit">Sign in <span>→</span></button></form>
-    <ng-container *ngIf="signedIn"><form [formGroup]="gigForm" (ngSubmit)="save()"><div class="form-heading"><div><p class="eyebrow">{{ editingId ? 'EDIT EVENT' : 'NEW SHIFT' }}</p><h2>{{ editingId ? 'Update event' : 'Post a paid gig' }}</h2><p class="form-intro">Add the details workers need to plan their time.</p></div><button type="button" class="signout" (click)="signOut()">Sign out</button></div><div class="section-label">EVENT DETAILS</div><label>Shift title<input formControlName="title" placeholder="e.g. Wedding service crew"></label><label>What will workers do?<textarea rows="3" formControlName="description" placeholder="Describe the role and tasks"></textarea></label><div class="two-col"><label>Venue<input formControlName="venue" placeholder="Event location"></label><label>Shift start<input type="datetime-local" formControlName="startsAt"></label></div><div class="section-label">TEAM & PAY</div><div class="three-col"><label>Number of workers<input type="number" min="1" formControlName="capacity"></label><label>Number of days<input type="number" min="1" formControlName="numberOfDays"></label><label>Pay per day (₹)<input type="number" min="1" formControlName="dailyPay"></label></div><div class="publish-note"><span>✦</span> Workers will see the duration and total earning potential.</div><div class="form-actions" *ngIf="editingId"><button type="button" class="cancel" (click)="cancelEdit()">Cancel edit</button><button type="submit">Save changes <span>→</span></button></div><button *ngIf="!editingId" type="submit">Publish shift <span>→</span></button></form>
-      <section class="manage-events"><div class="manage-heading"><div><p class="eyebrow">EVENT MANAGEMENT</p><h2>Your events</h2></div><span>{{ events.length }} total</span></div><div class="no-events" *ngIf="!events.length">No events yet. Publish one above to start building your team.</div><article class="event-row" *ngFor="let event of events"><div><strong>{{ event.title }}</strong><p>{{ event.venue }} · {{ event.numberOfDays }} {{ event.numberOfDays === 1 ? 'day' : 'days' }} · {{ event.registeredCount }}/{{ event.capacity }} registered</p></div><div class="event-actions"><button type="button" (click)="showRegistrations(event)">Registrations</button><button type="button" (click)="edit(event)">Edit</button><button type="button" class="delete" (click)="remove(event)">Delete</button></div></article></section>
-      <section class="registrations" *ngIf="viewingRegistrations"><div class="manage-heading"><div><p class="eyebrow">WORKER PROFILES</p><h2>{{ viewingRegistrations.title }}</h2></div><button class="signout" type="button" (click)="viewingRegistrations = undefined">Close</button></div><p class="no-events" *ngIf="!viewingRegistrations.registrations.length">No registrations yet.</p><article class="profile" *ngFor="let worker of viewingRegistrations.registrations"><img [src]="worker.picture" [alt]="worker.name"><div><strong>{{ worker.name }}</strong><p>{{ worker.email }} · {{ worker.phoneNumber }}</p><p>{{ worker.age }} years · {{ worker.gender }} · {{ worker.location }}</p><p>{{ worker.height }} cm · {{ worker.weight }} kg · {{ worker.education }}</p><p class="experience">{{ worker.experience }}</p></div></article></section>
+<header class="admin-header"><a routerLink="/" class="brand"><span>✦</span> EventHub</a><a routerLink="/"
+    class="back-link">← Worker board</a></header>
+<main class="portal">
+  <aside>
+    <p class="eyebrow">ADMINISTRATION</p>
+    <h1>Build the teams<br><i>behind great events.</i></h1>
+    <p>Post, manage, and staff event work from one place. Workers see the duration and daily pay before they apply.</p>
+    <div class="admin-benefits">
+      <div><strong>01</strong><span>Set the event duration</span></div>
+      <div><strong>02</strong><span>Review worker profiles</span></div>
+      <div><strong>03</strong><span>Keep every event up to date</span></div>
+    </div>
+    <div class="rule"></div>
+    <p class="small">This is a protected portal. Your account is required to manage events.</p>
+    <section class="sidebar-management" *ngIf="signedIn">
+      <div class="sidebar-management__heading">
+        <div><p class="eyebrow">EVENT MANAGEMENT</p><h2>Your events</h2></div>
+        <span>{{ events.length }}</span>
+      </div>
+      <p class="sidebar-empty" *ngIf="!events.length">Your published shifts will appear here.</p>
+      <article class="sidebar-event" *ngFor="let event of events">
+        <div class="sidebar-event__top"><div><strong>{{ event.title }}</strong><p>{{ event.venue }} · {{ event.registeredCount }}/{{ event.capacity }} filled</p></div><button type="button" (click)="edit(event)">Edit</button></div>
+        <details class="sidebar-registrations">
+          <summary>Registrations <span>{{ event.registeredCount }}</span></summary>
+          <div class="sidebar-registration-list">
+            <button type="button" class="download-all" (click)="downloadRegistrationReport(event)" [disabled]="!event.registrations.length">Download registration report</button>
+            <p class="sidebar-empty" *ngIf="!event.registrations.length">No registrations yet.</p>
+            <article class="sidebar-profile" *ngFor="let worker of event.registrations"><img [src]="worker.picture" [alt]="worker.name"><div><strong>{{ worker.name }}</strong><p>{{ worker.email }}</p><p>{{ worker.phoneNumber }} · {{ worker.location }}</p></div><button type="button" class="download-profile" (click)="downloadProfileCard(event, worker)">Profile card</button></article>
+          </div>
+        </details>
+        <button type="button" class="sidebar-delete" (click)="remove(event)">Delete event</button>
+      </article>
+    </section>
+  </aside>
+  <section class="portal-card">
+    <p class="notice" *ngIf="notice">{{ notice }} <button (click)="notice = ''">×</button></p>
+    <form class="login-form" *ngIf="!signedIn" [formGroup]="loginForm" (ngSubmit)="signIn()">
+      <p class="eyebrow">SECURE SIGN IN</p>
+      <h2>Administrator access</h2>
+      <p class="form-intro">Sign in to create and manage event opportunities.</p><div class="login-fields"><label>Username<input
+          formControlName="username" autocomplete="username" placeholder="Enter your username"></label><label>Password<input type="password"
+          formControlName="password" autocomplete="current-password" placeholder="Enter your password"></label></div><p class="security-note">Secure administrator access</p><button type="submit">Sign in
+        <span>→</span></button>
+    </form>
+    <ng-container *ngIf="signedIn">
+      <form class="gig-form" [formGroup]="gigForm" (ngSubmit)="save()">
+        <div class="form-heading">
+          <div>
+            <p class="eyebrow">{{ editingId ? 'EDIT EVENT' : 'NEW SHIFT' }}</p>
+            <h2>{{ editingId ? 'Update event' : 'Post a paid gig' }}</h2>
+            <p class="form-intro">Add the details workers need to plan their time.</p>
+          </div><button type="button" class="signout" (click)="signOut()">Sign out</button>
+        </div>
+        <div class="form-section"><div class="section-label"><span>01</span> EVENT DETAILS</div><label class="form-field">Shift title<input formControlName="title"
+            placeholder="e.g. Wedding service crew"><small>Make it clear and easy to spot at a glance.</small></label><label class="form-field">What will workers do?<textarea rows="3"
+            formControlName="description" placeholder="Describe the role and tasks"></textarea></label>
+        <div class="two-col"><label class="form-field">Venue<input formControlName="venue"
+              placeholder="Event location"></label><label class="form-field">Shift start<input type="datetime-local"
+              formControlName="startsAt"></label></div>
+        </div><div class="form-section form-section--compact"><div class="section-label"><span>02</span> TEAM & PAY</div>
+        <div class="three-col"><label class="form-field">Number of workers<input type="number" min="1"
+              formControlName="capacity"></label><label class="form-field">Number of days<input type="number" min="1"
+              formControlName="numberOfDays"></label><label>Pay per day (₹)<input type="number" min="1"
+              formControlName="dailyPay"></label></div></div>
+        <div class="publish-note"><span>✦</span> Workers will see the duration and total earning potential.</div>
+        <div class="form-actions" *ngIf="editingId"><button type="button" class="cancel" (click)="cancelEdit()">Cancel
+            edit</button><button type="submit">Save changes <span>→</span></button></div><button *ngIf="!editingId"
+          type="submit">Publish shift <span>→</span></button>
+      </form>
+      <section class="management-panel"><section class="manage-events">
+        <div class="manage-heading">
+          <div>
+            <p class="eyebrow">EVENT MANAGEMENT</p>
+            <h2>Your events</h2>
+          </div><span>{{ events.length }} total</span>
+        </div>
+        <div class="no-events" *ngIf="!events.length">No events yet. Publish one above to start building your team.
+        </div>
+        <article class="event-row" *ngFor="let event of events">
+          <div><strong>{{ event.title }}</strong>
+            <p>{{ event.venue }} · {{ event.numberOfDays }} {{ event.numberOfDays === 1 ? 'day' : 'days' }} · {{
+              event.registeredCount }}/{{ event.capacity }} registered</p>
+          </div>
+          <div class="event-actions"><button type="button"
+              (click)="edit(event)">Edit</button><button type="button" class="delete"
+              (click)="remove(event)">Delete</button></div>
+          <details class="registrations-dropdown">
+            <summary>Registrations <span>{{ event.registeredCount }} worker{{ event.registeredCount === 1 ? '' : 's' }}</span></summary>
+            <div class="registration-list">
+              <p class="no-events" *ngIf="!event.registrations.length">No registrations yet.</p>
+              <article class="profile" *ngFor="let worker of event.registrations"><img [src]="worker.picture" [alt]="worker.name">
+                <div><strong>{{ worker.name }}</strong><p>{{ worker.email }} · {{ worker.phoneNumber }}</p><p>{{ worker.age }} years · {{ worker.gender }} · {{ worker.location }}</p><p>{{ worker.height }} cm · {{ worker.weight }} kg · {{ worker.education }}</p><p class="experience">{{ worker.experience }}</p></div>
+              </article>
+            </div>
+          </details>
+        </article>
+      </section>
+      <section class="registrations" *ngIf="viewingRegistrations">
+        <div class="manage-heading">
+          <div>
+            <p class="eyebrow">WORKER PROFILES</p>
+            <h2>{{ viewingRegistrations.title }}</h2>
+          </div><button class="signout" type="button" (click)="viewingRegistrations = undefined">Close</button>
+        </div>
+        <p class="no-events" *ngIf="!viewingRegistrations.registrations.length">No registrations yet.</p>
+        <article class="profile" *ngFor="let worker of viewingRegistrations.registrations"><img [src]="worker.picture"
+            [alt]="worker.name">
+          <div><strong>{{ worker.name }}</strong>
+            <p>{{ worker.email }} · {{ worker.phoneNumber }}</p>
+            <p>{{ worker.age }} years · {{ worker.gender }} · {{ worker.location }}</p>
+            <p>{{ worker.height }} cm · {{ worker.weight }} kg · {{ worker.education }}</p>
+            <p class="experience">{{ worker.experience }}</p>
+          </div>
+        </article>
+      </section></section>
     </ng-container>
   </section>
 </main>
 <style>
-  .manage-events,.registrations{border-top:1px solid #e1e5df;margin-top:34px;padding-top:25px}.manage-heading{display:flex;align-items:start;justify-content:space-between}.manage-heading h2{margin:0}.manage-heading>span{font-size:11px;font-weight:700;background:#e6efe5;color:#506454;padding:6px 9px;border-radius:15px}.no-events{padding:20px 0;color:#718077;font-size:13px}.event-row{display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid #e7e9e4;padding:14px 0}.event-row strong,.profile strong{font-size:14px}.event-row p,.profile p{font-size:12px;color:#6d796f;margin:4px 0}.event-actions{display:flex;gap:6px}.event-actions button,.cancel{border:1px solid #cbd7cc;background:#fff;color:#385044;border-radius:3px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer}.event-actions .delete{color:#a33e34;border-color:#e5c4be}.profile{display:flex;gap:12px;border-top:1px solid #e7e9e4;padding:14px 0}.profile img{width:52px;height:52px;object-fit:cover;border-radius:50%;background:#e9eee8}.experience{font-style:italic}.form-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px}.form-actions button[type=submit]{margin-top:17px}@media(max-width:800px){.event-row{align-items:flex-start;flex-direction:column}.event-actions{width:100%;flex-wrap:wrap}.profile{align-items:flex-start}}
+  .download-all,.download-profile{border:1px solid #63806f;border-radius:3px;background:transparent;color:#e9b85e;font:700 10px 'DM Sans',sans-serif;cursor:pointer}.download-all{width:100%;margin:11px 0 2px;padding:8px}.download-all:hover,.download-profile:hover{background:#29483d;border-color:#82a18e}.download-all:disabled{opacity:.45;cursor:not-allowed}.sidebar-profile{align-items:center}.sidebar-profile>div{min-width:0;flex:1}.download-profile{padding:6px 7px;flex:0 0 auto}
+  .portal{align-items:start}.portal-card{background:linear-gradient(145deg,#fffcf5ed,#eff5edf0);border-color:#ffffff75;box-shadow:0 24px 58px #071b142b;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px)}
+  .portal-card .management-panel{display:none}.sidebar-management{margin-top:35px;padding-top:25px;border-top:1px solid #4f695e}.sidebar-management__heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:14px}.sidebar-management__heading .eyebrow{margin-bottom:5px}.sidebar-management__heading h2{margin:0;color:#fff;font-size:28px}.sidebar-management__heading>span{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#e9b85e;color:#233b32;font-size:11px;font-weight:800}.sidebar-empty{margin:0;padding:15px 0;color:#aec1b4;font-size:12px;line-height:1.45}.sidebar-event{padding:15px 0;border-top:1px solid #3e5b50}.sidebar-event__top{display:flex;align-items:start;justify-content:space-between;gap:10px}.sidebar-event strong{display:block;color:#f6f4ec;font-size:13px;line-height:1.35}.sidebar-event p,.sidebar-profile p{margin:4px 0 0;color:#b8c8bd;font-size:11px;line-height:1.4}.sidebar-event__top button,.sidebar-delete{border:0;background:none;color:#e9b85e;font:700 11px 'DM Sans',sans-serif;cursor:pointer;padding:1px 0}.sidebar-event__top button:hover,.sidebar-delete:hover{text-decoration:underline}.sidebar-registrations{margin-top:12px;border:1px solid #557164;border-radius:4px;background:#1d382f}.sidebar-registrations summary{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;color:#e2ebe2;font-size:11px;font-weight:800;cursor:pointer;list-style:none}.sidebar-registrations summary::-webkit-details-marker{display:none}.sidebar-registrations summary:after{content:'+';margin-left:7px;color:#e9b85e;font-size:16px;font-weight:400}.sidebar-registrations[open] summary{border-bottom:1px solid #456256}.sidebar-registrations[open] summary:after{content:'−'}.sidebar-registrations summary span{margin-left:auto;color:#adc4b4;font-size:10px}.sidebar-registration-list{padding:0 10px}.sidebar-registration-list .sidebar-empty{padding:12px 0}.sidebar-profile{display:flex;gap:8px;padding:10px 0;border-bottom:1px solid #3e5b50}.sidebar-profile:last-child{border-bottom:0}.sidebar-profile img{width:30px;height:30px;flex:0 0 30px;object-fit:cover;border-radius:50%;background:#e9eee8}.sidebar-profile strong{color:#f4f6ee;font-size:11px}.sidebar-delete{margin-top:12px;color:#e49b86}@media(max-width:800px){.sidebar-management{margin-top:28px}.sidebar-management__heading h2{font-size:25px}}
+  .management-panel{margin:48px -37px -37px;padding:30px 37px 37px;background:#edf3eb;border-top:1px solid #d8e3d7;border-radius:0 0 10px 10px}.management-panel .manage-events{margin:0;padding:0;border:0}.management-panel .manage-heading{align-items:end;padding-bottom:19px;border-bottom:1px solid #d4dfd3}.management-panel .manage-heading .eyebrow{color:#587562}.management-panel .manage-heading>span{background:#d9e9d9;color:#365b44}.management-panel .event-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:17px 0;border-color:#d6e0d5}.management-panel .event-row>div:first-child strong{font:600 20px 'Playfair Display',Georgia,serif;letter-spacing:-.4px}.management-panel .event-actions{align-self:start}.registrations-dropdown{grid-column:1/-1;border:1px solid #d8e3d7;border-radius:5px;background:#fff}.registrations-dropdown summary{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;color:#385747;font-size:12px;font-weight:800;cursor:pointer;list-style:none}.registrations-dropdown summary::-webkit-details-marker{display:none}.registrations-dropdown summary:after{content:'+';order:2;margin-left:8px;color:#547260;font-size:18px;font-weight:400}.registrations-dropdown[open] summary{border-bottom:1px solid #e2e9e1}.registrations-dropdown[open] summary:after{content:'−'}.registrations-dropdown summary span{margin-left:auto;margin-right:7px;color:#6e8274;font-size:11px;font-weight:700}.registration-list{padding:0 13px 4px}.registration-list .no-events{padding:16px 0}.registration-list .profile{padding:13px 0}.management-panel .registrations{display:none}@media(max-width:800px){.management-panel{margin:38px -27px -27px;padding:25px 27px 27px}.management-panel .event-row{grid-template-columns:1fr}.management-panel .event-actions{width:auto}.registrations-dropdown{grid-column:auto}}
+  .login-form{max-width:470px}.login-fields{display:grid;gap:16px;padding:20px;margin:27px 0 16px;border:1px solid #e0e6dd;border-radius:8px;background:linear-gradient(135deg,#fff 0,#f5f8f2 100%)}.login-fields label{display:block;color:#39463d;font-size:12px;font-weight:800;letter-spacing:.2px}.login-fields input{display:block;width:100%;margin-top:8px;padding:12px 13px;border:1px solid #c9d5ca;border-radius:4px;background:#fff;color:#26342d;font:400 14px 'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}.login-fields input::placeholder{color:#9ba69d}.login-fields input:focus{border-color:#4e7a62;box-shadow:0 0 0 3px #5b8d6a20}.security-note{display:flex;align-items:center;gap:7px;margin:0;color:#6f7d72;font-size:11px}.security-note:before{content:'✦';display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e4efe4;color:#41684e;font-size:10px}.login-form button[type=submit]{margin-top:19px}
+  .gig-form .section-label{border:0;padding:0;margin:0 0 16px}.gig-form .two-col,.gig-form .three-col{display:grid;gap:15px}.gig-form .two-col{grid-template-columns:1fr 1fr}.gig-form .three-col{grid-template-columns:1fr 1fr 1fr}.gig-form .form-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px}.gig-form .form-actions button[type=submit]{margin-top:17px}@media(max-width:800px){.gig-form .two-col,.gig-form .three-col{grid-template-columns:1fr;gap:0}}
+  .manage-events,
+  .registrations {
+    border-top: 1px solid #e1e5df;
+    margin-top: 34px;
+    padding-top: 25px
+  }
+
+  .manage-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between
+  }
+
+  .manage-heading h2 {
+    margin: 0
+  }
+
+  .manage-heading>span {
+    font-size: 11px;
+    font-weight: 700;
+    background: #e6efe5;
+    color: #506454;
+    padding: 6px 9px;
+    border-radius: 15px
+  }
+
+  .no-events {
+    padding: 20px 0;
+    color: #718077;
+    font-size: 13px
+  }
+
+  .event-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-top: 1px solid #e7e9e4;
+    padding: 14px 0
+  }
+
+  .event-row strong,
+  .profile strong {
+    font-size: 14px
+  }
+
+  .event-row p,
+  .profile p {
+    font-size: 12px;
+    color: #6d796f;
+    margin: 4px 0
+  }
+
+  .event-actions {
+    display: flex;
+    gap: 6px
+  }
+
+  .event-actions button,
+  .cancel {
+    border: 1px solid #cbd7cc;
+    background: #fff;
+    color: #385044;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer
+  }
+
+  .event-actions .delete {
+    color: #a33e34;
+    border-color: #e5c4be
+  }
+
+  .profile {
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid #e7e9e4;
+    padding: 14px 0
+  }
+
+  .profile img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #e9eee8
+  }
+
+  .experience {
+    font-style: italic
+  }
+
+  .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px
+  }
+
+  .form-actions button[type=submit] {
+    margin-top: 17px
+  }
+
+  @media(max-width:800px) {
+    .event-row {
+      align-items: flex-start;
+      flex-direction: column
+    }
+
+    .event-actions {
+      width: 100%;
+      flex-wrap: wrap
+    }
+
+    .profile {
+      align-items: flex-start
+    }
+  }
 </style>

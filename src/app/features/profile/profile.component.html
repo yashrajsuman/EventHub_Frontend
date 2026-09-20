@@ -1,0 +1,52 @@
+<main class="profile-page">
+    <!-- <header><a routerLink="/" class="brand">✦ EventHub</a><a routerLink="/profile" class="edit-profile">Edit profile</a> -->
+    <!-- </header> -->
+    <section>
+        <p class="eyebrow">{{ auth.state.value?.profileComplete ? 'YOUR PROFILE' : 'ONE LAST STEP' }}</p>
+        <h1>{{ auth.state.value?.profileComplete ? 'Edit your profile' : 'Complete your profile' }}</h1>
+        <p class="note">Your details, will be shared with the event organizer only for
+            registration and verification</p>
+        <p class="notice" *ngIf="notice">{{ notice }}</p>
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+            <div class="grid"><label>Full name<input formControlName="name" [class.invalid]="isInvalid('name')"><small
+                        *ngIf="isInvalid('name')">{{ fieldError('name') }}</small></label><label>Phone number<input
+                        type="tel" inputmode="tel" formControlName="phoneNumber" (input)="phoneInput($event)"
+                        [class.invalid]="isInvalid('phoneNumber')"><small *ngIf="isInvalid('phoneNumber')">{{
+                        fieldError('phoneNumber') }}</small></label><label>Age<input type="number" formControlName="age"
+                        [class.invalid]="isInvalid('age')"><small *ngIf="isInvalid('age')">{{ fieldError('age')
+                        }}</small></label><label>Gender<select formControlName="gender"
+                        [class.invalid]="isInvalid('gender')">
+                        <option value="">Select</option>
+                        <option>Female</option>
+                        <option>Male</option>
+                        <option>Non-binary</option>
+                        <option>Prefer not to say</option>
+                    </select><small *ngIf="isInvalid('gender')">{{ fieldError('gender')
+                        }}</small></label><label>Location<input formControlName="location"
+                        [class.invalid]="isInvalid('location')"><small *ngIf="isInvalid('location')">{{
+                        fieldError('location') }}</small></label><label>Height (cm)<input type="number"
+                        formControlName="height" [class.invalid]="isInvalid('height')"><small
+                        *ngIf="isInvalid('height')">{{ fieldError('height') }}</small></label><label>Weight (kg)<input
+                        type="number" formControlName="weight" [class.invalid]="isInvalid('weight')"><small
+                        *ngIf="isInvalid('weight')">{{ fieldError('weight') }}</small></label></div>
+            <label>Education<input formControlName="education" [class.invalid]="isInvalid('education')"><small
+                    *ngIf="isInvalid('education')">{{ fieldError('education')
+                    }}</small></label><label>Experience<textarea formControlName="experience" rows="3"
+                    [class.invalid]="isInvalid('experience')"></textarea><small *ngIf="isInvalid('experience')">{{
+                    fieldError('experience') }}</small></label><label>Profile picture<input type="file" accept="image/*"
+                    (change)="picture($event)" [class.invalid]="isInvalid('picture')"><small
+                    *ngIf="isInvalid('picture')">{{ fieldError('picture') }}</small></label><img *ngIf="preview"
+                [src]="preview" alt="Profile preview">
+                
+                <!-- <label>Aadhaar card document<input type="file"
+                    accept="image/*,application/pdf" (change)="aadhaar($event)"
+                    [class.invalid]="isInvalid('aadhaarDocument')"><small *ngIf="isInvalid('aadhaarDocument')">{{
+                    fieldError('aadhaarDocument') }}</small><small *ngIf="aadhaarFileName">Selected: {{ aadhaarFileName
+                    }}</small><small *ngIf="!aadhaarFileName && form.controls.aadhaarDocument.value">Aadhaar document
+                    already uploaded.</small></label> -->
+                    
+                    <button [disabled]="busy">{{ busy ? 'Saving…' :
+                auth.state.value?.profileComplete ? 'Save profile changes' : 'Save profile and continue' }}</button>
+        </form>
+    </section>
+</main>

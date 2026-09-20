@@ -1,29 +1,83 @@
-<header class="worker-header"><a routerLink="/" class="brand"><span>✦</span> EventHub</a><p>Find your next event shift</p></header>
+<header class="worker-header"><a routerLink="/" class="brand"><span>✦</span> EventHub</a>
+    <p *ngIf="!auth.state.value">Find your next event shift</p>
+    <nav class="account-links" *ngIf="auth.state.value"><a routerLink="/profile">{{ auth.state.value.profileComplete ?
+            'My profile' : 'Complete profile' }}</a><button (click)="auth.signOut()">Sign out</button></nav><a
+        *ngIf="!auth.state.value" routerLink="/auth" class="signin-link">Sign in</a>
+</header>
 <main class="worker-main">
-  <section class="worker-hero"><div><p class="eyebrow">EVENT GIGS, MADE SIMPLE</p><h1>Find a shift.<br><i>Get paid daily.</i></h1><p>Browse verified event work near you. Register for the shifts that fit your schedule and earn for every day you work.</p><a class="hero-button" href="#gigs">See open shifts <span>↓</span></a></div><div class="hero-stat"><strong>Daily</strong><span>Clear pay shown upfront.<br>One shift at a time.</span></div></section>
-  <p class="notice" *ngIf="notice">{{ notice }} <button (click)="notice = ''">×</button></p>
-  <section id="gigs"><div class="section-heading"><div><p class="eyebrow">OPEN SHIFTS</p><h2>Work that fits your day</h2></div><span class="shift-count">{{ filteredGigs.length }} opportunities</span></div>
-  <div class="filters"><div class="date-pills"><button [class.selected]="dateFilter === 'all'" (click)="dateFilter = 'all'">All dates</button><button [class.selected]="dateFilter === 'today'" (click)="dateFilter = 'today'">Today</button><button [class.selected]="dateFilter === 'tomorrow'" (click)="dateFilter = 'tomorrow'">Tomorrow</button></div><label>Sort by <select [(ngModel)]="payOrder"><option value="default">Date</option><option value="low">Pay: low to high</option><option value="high">Pay: high to low</option></select></label></div>
-  <div *ngIf="loading" class="empty">Loading available shifts…</div><div *ngIf="!loading && gigs.length === 0" class="empty"><span>○</span><h3>No shifts posted yet</h3><p>Check back soon for new event opportunities.</p></div><div *ngIf="!loading && gigs.length > 0 && filteredGigs.length === 0" class="empty"><span>○</span><h3>No shifts for this day</h3><p>Try viewing all dates or tomorrow's shifts.</p></div>
-  <div class="gig-grid" *ngIf="filteredGigs.length"><article class="gig-card" *ngFor="let gig of filteredGigs; let i = index"><div class="gig-date" [class.orange]="i % 2 === 1"><span>{{ gig.startsAt | date:'MMM' }}</span><strong>{{ gig.startsAt | date:'d' }}</strong><small>{{ gig.startsAt | date:'EEE' }}</small></div><div class="gig-content"><p class="pay">{{ gig.dailyPay | currency:'INR':'symbol':'1.0-0' }} <span>/ day</span></p><h3>{{ gig.title }}</h3><p class="description">{{ gig.description }}</p><div class="gig-meta"><span>{{ gig.numberOfDays }} {{ gig.numberOfDays === 1 ? 'day' : 'days' }}</span><strong>{{ gig.dailyPay * gig.numberOfDays | currency:'INR':'symbol':'1.0-0' }} total</strong></div><p class="detail">⌖ {{ gig.venue }}</p><p class="detail">◷ {{ gig.startsAt | date:'h:mm a' }} · {{ gig.spotsLeft }} slots left</p><button (click)="choose(gig)" [disabled]="gig.spotsLeft === 0">{{ gig.spotsLeft ? 'Register for shift' : 'Shift full' }} <span *ngIf="gig.spotsLeft">→</span></button></div></article></div></section>
+    <section class="worker-hero">
+        <div>
+            <p class="eyebrow">EVENT GIGS, MADE SIMPLE</p>
+            <h1>Find a shift.<br><i>Get paid daily.</i></h1>
+            <p>Browse verified event work near you. Complete your profile once, then apply to shifts that fit your
+                schedule.</p><a class="hero-button" href="#gigs">See open shifts ↓</a>
+        </div>
+        <div class="hero-stat"><strong>Daily</strong><span>Clear pay shown upfront.<br>One shift at a time.</span></div>
+    </section>
+    <p class="notice" *ngIf="notice">{{ notice }} <button (click)="notice = ''">×</button></p>
+    <section id="gigs">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">OPEN SHIFTS</p>
+                <h2>Work that fits your day</h2>
+            </div><span class="shift-count">{{ filteredGigs.length }} opportunities</span>
+        </div>
+        <div class="filters">
+            <div class="date-pills"><button [class.selected]="dateFilter === 'all'" (click)="dateFilter = 'all'">All
+                    dates</button><button [class.selected]="dateFilter === 'today'"
+                    (click)="dateFilter = 'today'">Today</button><button [class.selected]="dateFilter === 'tomorrow'"
+                    (click)="dateFilter = 'tomorrow'">Tomorrow</button></div><label>Sort by <select
+                    [(ngModel)]="payOrder">
+                    <option value="default">Date</option>
+                    <option value="low">Pay: low to high</option>
+                    <option value="high">Pay: high to low</option>
+                </select></label>
+        </div>
+        <div *ngIf="loading" class="empty">Loading available shifts…</div>
+        <div class="gig-grid" *ngIf="filteredGigs.length">
+            <article class="gig-card" *ngFor="let gig of filteredGigs; let i = index">
+                <div class="gig-date" [class.orange]="i % 2 === 1"><span>{{ gig.startsAt | date:'MMM'
+                        }}</span><strong>{{ gig.startsAt | date:'d' }}</strong><small>{{ gig.startsAt | date:'EEE'
+                        }}</small></div>
+                <div class="gig-content">
+                    <p class="pay">{{ gig.dailyPay | currency:'INR':'symbol':'1.0-0' }} <span>/ day</span></p>
+                    <h3>{{ gig.title }}</h3>
+                    <p class="description">{{ gig.description }}</p>
+                    <div class="gig-meta"><span>{{ gig.numberOfDays }} {{ gig.numberOfDays === 1 ? 'day' : 'days'
+                            }}</span><strong>{{ gig.dailyPay * gig.numberOfDays | currency:'INR':'symbol':'1.0-0' }}
+                            total</strong></div>
+                    <p class="detail">⌖ {{ gig.venue }}</p>
+                    <p class="detail">◷ {{ gig.startsAt | date:'h:mm a' }} · {{ gig.spotsLeft }} slots left</p><button
+                        *ngIf="!registeredGigIds.has(gig.id)" (click)="choose(gig)" [disabled]="gig.spotsLeft === 0">{{
+                        gig.spotsLeft ? 'Register for shift' : 'Shift full' }}</button><button
+                        *ngIf="registeredGigIds.has(gig.id)" class="registered-button" disabled>✓ Registered</button>
+                </div>
+            </article>
+        </div>
+    </section>
 </main>
-<div class="modal-backdrop" *ngIf="selectedGig"><section class="modal"><button class="close" (click)="close()">×</button><p class="eyebrow">REGISTER FOR SHIFT</p><h2>{{ selectedGig.title }}</h2><p class="modal-pay">{{ selectedGig.dailyPay | currency:'INR':'symbol':'1.0-0' }} per day</p><div class="modal-duration"><span>{{ selectedGig.numberOfDays }} {{ selectedGig.numberOfDays === 1 ? 'day' : 'days' }} of work</span><strong>{{ selectedGig.dailyPay * selectedGig.numberOfDays | currency:'INR':'symbol':'1.0-0' }} total potential</strong></div><p class="modal-detail">{{ selectedGig.startsAt | date:'EEEE, MMMM d · h:mm a' }}<br>{{ selectedGig.venue }}</p>
-  <div class="registration-success" *ngIf="registrationComplete"><span>✓</span><h3>Registration successful</h3><p>Thank you for registering for <strong>{{ selectedGig.title }}</strong>. We will contact you soon if your application is selected.</p><button type="button" (click)="close()">Done</button></div>
-  <form *ngIf="!registrationComplete" [formGroup]="registrationForm" (ngSubmit)="register()" novalidate>
-    <div class="form-section-title">YOUR DETAILS</div><p class="form-error" *ngIf="registrationForm.invalid && registrationForm.touched">Please correct the highlighted fields before confirming.</p>
-    <div class="form-grid">
-      <label>Full name<input formControlName="name" [class.invalid]="isInvalid('name')" placeholder="Your name"><small *ngIf="isInvalid('name')">{{ fieldError('name') }}</small></label>
-      <label>Email address<input type="email" formControlName="email" [class.invalid]="isInvalid('email')" placeholder="you@example.com"><small *ngIf="isInvalid('email')">{{ fieldError('email') }}</small></label>
-      <label>Phone number<input type="tel" formControlName="phoneNumber" [class.invalid]="isInvalid('phoneNumber')" placeholder="Your contact number"><small *ngIf="isInvalid('phoneNumber')">{{ fieldError('phoneNumber') }}</small></label>
-      <label>Age<input type="number" min="1" formControlName="age" [class.invalid]="isInvalid('age')"><small *ngIf="isInvalid('age')">{{ fieldError('age') }}</small></label>
-      <label>Gender<select formControlName="gender" [class.invalid]="isInvalid('gender')"><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option></select><small *ngIf="isInvalid('gender')">{{ fieldError('gender') }}</small></label>
-      <label>Location<input formControlName="location" [class.invalid]="isInvalid('location')" placeholder="City or area"><small *ngIf="isInvalid('location')">{{ fieldError('location') }}</small></label>
-      <label>Height (cm)<input type="number" min="1" formControlName="height" [class.invalid]="isInvalid('height')"><small *ngIf="isInvalid('height')">{{ fieldError('height') }}</small></label>
-      <label>Weight (kg)<input type="number" min="1" formControlName="weight" [class.invalid]="isInvalid('weight')"><small *ngIf="isInvalid('weight')">{{ fieldError('weight') }}</small></label>
-    </div>
-    <label>Education<input formControlName="education" [class.invalid]="isInvalid('education')" placeholder="Your highest qualification"><small *ngIf="isInvalid('education')">{{ fieldError('education') }}</small></label>
-    <label>Experience<textarea rows="2" formControlName="experience" [class.invalid]="isInvalid('experience')" placeholder="Relevant event or work experience"></textarea><small *ngIf="isInvalid('experience')">{{ fieldError('experience') }}</small></label>
-    <label class="picture-field" [class.invalid-field]="isInvalid('picture')">Profile picture<input type="file" accept="image/*" (change)="onPictureSelected($event)"><span>Choose a clear image up to 2 MB</span><small *ngIf="isInvalid('picture')">{{ fieldError('picture') }}</small></label>
-    <p class="picture-error" *ngIf="pictureError">{{ pictureError }}</p><img *ngIf="picturePreview" [src]="picturePreview" class="picture-preview" alt="Selected profile preview"><button type="submit" [disabled]="submitting">{{ submitting ? 'Confirming registration…' : 'Confirm registration →' }}</button>
-  </form>
-</section></div>
+<div class="modal-backdrop" *ngIf="selectedGig">
+    <section class="modal"><button class="close" (click)="close()">×</button>
+        <p class="eyebrow">REGISTER FOR SHIFT</p>
+        <h2>{{ selectedGig.title }}</h2>
+        <p class="modal-pay">{{ selectedGig.dailyPay | currency:'INR':'symbol':'1.0-0' }} per day</p>
+        <div class="modal-duration"><span>{{ selectedGig.numberOfDays }} {{ selectedGig.numberOfDays === 1 ? 'day' :
+                'days' }} of work</span><strong>{{ selectedGig.dailyPay * selectedGig.numberOfDays |
+                currency:'INR':'symbol':'1.0-0' }} total potential</strong></div>
+        <p class="modal-detail">{{ selectedGig.startsAt | date:'EEEE, MMMM d · h:mm a' }}<br>{{ selectedGig.venue }}</p>
+        <div class="registration-success" *ngIf="registrationComplete"><span>✓</span>
+            <h3>You’re registered</h3>
+            <p>Your completed profile has been shared with the organizer for selection and verification.</p><button
+                type="button" (click)="close()">Done</button>
+        </div>
+        <div *ngIf="!registrationComplete" class="registration-gate">
+            <p *ngIf="!auth.state.value">Sign in and complete your profile to apply for this shift.</p>
+            <p *ngIf="auth.state.value && !auth.state.value.profileComplete">Complete your profile before applying. Your
+                details may be shared with the organizer for event selection and verification.</p>
+            <p *ngIf="auth.state.value?.profileComplete">Your completed profile will be shared with the organizer for
+                event selection and verification.</p><button type="button" (click)="register()"
+                [disabled]="submitting">{{ !auth.state.value ? 'Sign in to apply' : !auth.state.value.profileComplete ?
+                'Complete profile' : submitting ? 'Confirming…' : 'Confirm registration →' }}</button>
+        </div>
+    </section>
+</div>
