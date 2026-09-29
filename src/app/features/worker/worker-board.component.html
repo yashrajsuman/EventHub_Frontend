@@ -36,6 +36,7 @@
         <div *ngIf="loading" class="empty">Loading available shifts…</div>
         <div class="gig-grid" *ngIf="filteredGigs.length">
             <article class="gig-card" *ngFor="let gig of filteredGigs; let i = index">
+                <img *ngIf="gig.imageUrl" class="gig-image" [src]="gig.imageUrl" [alt]="gig.title + ' event image'">
                 <div class="gig-date" [class.orange]="i % 2 === 1"><span>{{ gig.startsAt | date:'MMM'
                         }}</span><strong>{{ gig.startsAt | date:'d' }}</strong><small>{{ gig.startsAt | date:'EEE'
                         }}</small></div>
@@ -60,11 +61,13 @@
     <section class="modal"><button class="close" (click)="close()">×</button>
         <p class="eyebrow">REGISTER FOR SHIFT</p>
         <h2>{{ selectedGig.title }}</h2>
+        <p class="modal-error" *ngIf="modalError" role="alert">{{ modalError }} <button type="button" (click)="modalError = ''">×</button></p>
         <p class="modal-pay">{{ selectedGig.dailyPay | currency:'INR':'symbol':'1.0-0' }} per day</p>
         <div class="modal-duration"><span>{{ selectedGig.numberOfDays }} {{ selectedGig.numberOfDays === 1 ? 'day' :
                 'days' }} of work</span><strong>{{ selectedGig.dailyPay * selectedGig.numberOfDays |
                 currency:'INR':'symbol':'1.0-0' }} total potential</strong></div>
         <p class="modal-detail">{{ selectedGig.startsAt | date:'EEEE, MMMM d · h:mm a' }}<br>{{ selectedGig.venue }}</p>
+        <div class="registration-note" *ngIf="selectedGig.registrationNote"><strong>Note from the organizer</strong><p>{{ selectedGig.registrationNote }}</p></div>
         <div class="registration-success" *ngIf="registrationComplete"><span>✓</span>
             <h3>You’re registered</h3>
             <p>Your completed profile has been shared with the organizer for selection and verification.</p><button

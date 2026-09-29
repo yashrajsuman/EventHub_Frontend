@@ -3,8 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../src/environments/environment';
 import { AuthService } from './auth.service';
 
-export interface Gig { id: number; title: string; description: string; venue: string; startsAt: string; capacity: number; numberOfDays: number; dailyPay: number; registeredCount: number; spotsLeft: number; }
-export interface CreateGig { title: string; description: string; venue: string; startsAt: string; capacity: number; numberOfDays: number; dailyPay: number; }
+export interface Gig { id: number; title: string; description: string; venue: string; startsAt: string; capacity: number; numberOfDays: number; dailyPay: number; imageUrl?: string; registrationNote?: string; registeredCount: number; spotsLeft: number; }
+export interface CreateGig { title: string; description: string; venue: string; startsAt: string; capacity: number; numberOfDays: number; dailyPay: number; imageUrl: string; registrationNote: string; }
 export interface RegistrationData { name: string; email: string; phoneNumber: string; age: number; gender: string; location: string; height: number; weight: number; education: string; experience: string; picture: string; }
 export interface AdminGig extends Gig { registrations: RegistrationData[]; }
 

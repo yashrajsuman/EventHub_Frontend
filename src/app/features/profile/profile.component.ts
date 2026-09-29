@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/api/auth.service';
 
-@Component({ selector: 'app-profile', standalone: true, imports: [CommonModule, ReactiveFormsModule], templateUrl: './profile.component.html', styleUrl: './profile.component.css' })
+@Component({ selector: 'app-profile', standalone: true, imports: [CommonModule, ReactiveFormsModule, RouterLink], templateUrl: './profile.component.html', styleUrl: './profile.component.css' })
 export class ProfileComponent implements OnInit {
   busy = false; notice = ''; preview = ''; aadhaarFileName = ''; readonly form;
   constructor(fb: FormBuilder, public readonly auth: AuthService, private readonly router: Router) { this.form = fb.nonNullable.group({ name: ['', Validators.required], phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+() -]{7,20}$/)]], age: [18, [Validators.required, Validators.min(18)]], gender: ['', Validators.required], location: ['', Validators.required], height: [0, [Validators.required, Validators.min(1)]], weight: [0, [Validators.required, Validators.min(1)]], education: ['', Validators.required], experience: ['', Validators.required], picture: ['', Validators.required], aadhaarDocument: [''] }); }

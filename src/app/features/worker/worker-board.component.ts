@@ -5,9 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { EventApiService, Gig } from '../../core/api/event-api.service';
 import { AuthService } from '../../core/api/auth.service';
 
-@Component({ selector: 'app-worker-board', standalone: true, imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, RouterLink], templateUrl: './worker-board.component.html', styleUrl: './worker-board.component.css' })
+@Component({ selector: 'app-worker-board', standalone: true, imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, RouterLink], templateUrl: './worker-board.component.html', styleUrls: ['./worker-board.component.css', './worker-event-images.component.css'] })
 export class WorkerBoardComponent implements OnInit {
-  gigs: Gig[] = []; loading = true; submitting = false; registrationComplete = false; notice = ''; selectedGig?: Gig; registeredGigIds = new Set<number>();
+  gigs: Gig[] = []; loading = true; submitting = false; registrationComplete = false; notice = ''; modalError = ''; selectedGig?: Gig; registeredGigIds = new Set<number>();
   dateFilter: 'all' | 'today' | 'tomorrow' = 'all';
   payOrder: 'default' | 'low' | 'high' = 'default';
   constructor(private readonly api: EventApiService, public readonly auth: AuthService, private readonly router: Router) { }
@@ -21,8 +21,8 @@ export class WorkerBoardComponent implements OnInit {
     return filtered.sort((a, b) => this.payOrder === 'low' ? a.dailyPay - b.dailyPay : this.payOrder === 'high' ? b.dailyPay - a.dailyPay : a.startsAt.localeCompare(b.startsAt));
   }
   private dateKey(date: Date) { return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`; }
-  choose(gig: Gig) { this.selectedGig = gig; this.submitting = false; this.registrationComplete = false; }
-  close() { this.selectedGig = undefined; this.registrationComplete = false; }
+  choose(gig: Gig) { this.selectedGig = gig; this.submitting = false; this.registrationComplete = false; this.modalError = ''; }
+  close() { this.selectedGig = undefined; this.registrationComplete = false; this.modalError = ''; }
   register() {
     if (!this.selectedGig || this.submitting) return;
     if (!this.auth.state.value) { this.router.navigateByUrl('/auth'); return; }
@@ -32,10 +32,10 @@ export class WorkerBoardComponent implements OnInit {
         if (!profile.profileComplete) { this.submitting = false; this.router.navigateByUrl('/profile'); return; }
         this.api.register(this.selectedGig!.id).subscribe({
           next: updated => { this.gigs = this.gigs.map(g => g.id === updated.id ? updated : g); this.registeredGigIds.add(updated.id); this.submitting = false; this.registrationComplete = true; },
-          error: err => { this.notice = err.error?.message ?? 'Registration could not be completed.'; this.submitting = false; }
+          error: err => { this.modalError = err.error?.message ?? 'Registration could not be completed.'; this.submitting = false; }
         });
       },
-      error: () => { this.submitting = false; this.notice = 'Unable to verify your profile. Please sign in again.'; }
+      error: () => { this.submitting = false; this.modalError = 'Unable to verify your profile. Please sign in again.'; }
     });
   }
 }

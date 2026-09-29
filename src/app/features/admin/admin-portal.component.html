@@ -62,6 +62,11 @@
               formControlName="capacity"></label><label class="form-field">Number of days<input type="number" min="1"
               formControlName="numberOfDays"></label><label>Pay per day (₹)<input type="number" min="1"
               formControlName="dailyPay"></label></div></div>
+        <div class="form-section form-section--compact"><div class="section-label"><span>03</span> IMAGE &amp; REGISTRATION NOTE</div>
+          <label class="form-field">Event image (optional)<input type="file" accept="image/*" (change)="uploadEventImage($event)"><small>Upload a JPG, PNG, or WebP image up to 5 MB. A default event image is shown if you leave this empty.</small></label>
+          <div class="image-preview" *ngIf="gigForm.controls.imageUrl.value"><img [src]="gigForm.controls.imageUrl.value" alt="Event image preview"><button type="button" (click)="removeEventImage()">Remove image</button></div>
+          <label class="form-field">Note shown before registration (optional)<textarea rows="3" formControlName="registrationNote" placeholder="e.g. Please wear black shoes and arrive 15 minutes early."></textarea><small>This appears in the worker's registration popup.</small></label>
+        </div>
         <div class="publish-note"><span>✦</span> Workers will see the duration and total earning potential.</div>
         <div class="form-actions" *ngIf="editingId"><button type="button" class="cancel" (click)="cancelEdit()">Cancel
             edit</button><button type="submit">Save changes <span>→</span></button></div><button *ngIf="!editingId"
