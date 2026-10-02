@@ -3,6 +3,6 @@
 .gig-content h3, .gig-content .pay { padding-right: 46px; }
 .registration-note { margin: 16px 0; padding: 12px; background: #fff4df; border-left: 3px solid #edc46e; color: #55442d; font-size: 13px; line-height: 1.5; }
 .registration-note strong { font-size: 12px; }
-.registration-note p { margin: 5px 0 0; }
+.registration-note p { margin: 5px 0 0; white-space: pre-line; }
 .modal-error { margin: 12px 0; padding: 10px 12px; border-radius: 4px; background: #fff0ed; color: #9a382d; font-size: 13px; line-height: 1.4; }
 .modal-error button { float: right; border: 0; background: none; color: inherit; font-size: 18px; cursor: pointer; line-height: 1; }
